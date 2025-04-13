@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import joblib
+import pickle  # Changed from joblib to pickle
 from PIL import Image
 import gdown  
 
@@ -22,9 +22,12 @@ def load_data():
     return anime, ratings
 
 # ----------------------- LOAD MODEL -----------------------
-#@st.cache_resource
+@st.cache_resource
 def load_model():
-    return joblib.load("svd_model.pkl")
+    # Using pickle to load the model
+    with open("svd_model.pkl", 'rb') as f:
+        model = pickle.load(f)  # Use pickle to load the model
+    return model
 
 # ----------------------- RECOMMENDATION FUNCTION -----------------------
 def recommend_top_n(user_id, model, anime_df, rating_df, top_n=10):
