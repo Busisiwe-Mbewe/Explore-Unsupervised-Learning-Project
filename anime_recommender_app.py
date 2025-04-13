@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 import os
 import requests
+from PIL import Image
 
 # ----------------------- DOWNLOAD MODEL -----------------------
 def download_model(file_id, output):
