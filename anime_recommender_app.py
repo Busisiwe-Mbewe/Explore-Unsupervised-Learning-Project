@@ -3,17 +3,17 @@ import pandas as pd
 import pickle  # Changed from joblib to pickle
 from PIL import Image
 import gdown  
+import os
 
 # ----------------------- DOWNLOAD MODEL -----------------------
 # Correct download link using file ID
 file_id = "1afAIaxXH0efMFh3vFGK3-egp5RIFIQtE"
-url = f"https://drive.google.com/uc?id={file_id}"
 output = "svd_model.pkl"
 
 # Download model only if it doesn't exist locally
-import os
 if not os.path.exists(output):
-    gdown.download(url, output, quiet=False)
+    url = f"https://drive.google.com/uc?id={file_id}"
+    gdown.download(url, output, quiet=False, fuzzy=True)  # Added fuzzy=True to handle confirmation pages
 
 # ----------------------- LOAD DATA -----------------------
 @st.cache_data
@@ -116,13 +116,4 @@ with tab3:
     anime_df, rating_df = load_data()
     model = load_model()
 
-    user_id = st.number_input("Enter User ID:", min_value=1, step=1)
-
-    if st.button("Get Recommendations"):
-        if user_id not in rating_df['user_id'].unique():
-            st.warning("User ID not found.")
-        else:
-            with st.spinner("Generating recommendations..."):
-                recs = recommend_top_n(user_id, model, anime_df, rating_df)
-                st.success("Here are your top picks!")
-                st.dataframe(recs.reset_index(drop=True))
+    user_id = st.number_input("Enter User ID:", min_value=_
