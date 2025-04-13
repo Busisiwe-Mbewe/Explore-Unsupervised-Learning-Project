@@ -72,8 +72,8 @@ def recommend_top_n(user_id, model, anime_df, rating_df, top_n=10):
 st.set_page_config(page_title="Anime Recommendation System", layout="wide")
 
 # ----------------------- IMAGE BANNER -----------------------
-banner_image = Image.open("Top-10-Best-Anime-Series-Of-All-Time-Ranked-1140x570.jpg")
-st.image(banner_image, use_container_width=True)
+#banner_image = Image.open("Top-10-Best-Anime-Series-Of-All-Time-Ranked-1140x570.jpg")
+#st.image(banner_image, use_container_width=True)
 
 # ----------------------- PAGE TITLE -----------------------
 st.markdown("<h1 style='text-align: center; margin-top: -20px;'>Anime Recommendation System</h1>", unsafe_allow_html=True)
