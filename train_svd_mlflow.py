@@ -1,11 +1,11 @@
 import pandas as pd
 from surprise import SVD, Dataset, Reader
-import joblib
 import os
 import tempfile
 import mlflow
 import mlflow.pyfunc
 from mlflow.tracking import MlflowClient
+import pickle  # Changed from joblib to pickle
 from svd_wrapper import SurpriseSVDWrapper
 
 # Load ratings data
@@ -32,8 +32,9 @@ with mlflow.start_run(run_name="SVD_Collaborative_Filtering") as run:
     # Define the path to save the model in the same directory as the script
     model_path = os.path.join(current_dir, "svd_model.pkl")
 
-    # Save the model using joblib with compression
-    joblib.dump(model, model_path, compress=3)
+    # Save the model using pickle (instead of joblib)
+    with open(model_path, 'wb') as f:
+        pickle.dump(model, f)  # Use pickle to save the model
 
     mlflow.pyfunc.log_model(
         artifact_path="svd_model",
