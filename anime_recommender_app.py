@@ -5,9 +5,10 @@ from PIL import Image
 import gdown  
 
 # ----------------------- DOWNLOAD MODEL -----------------------
-# Replace <your_file_id> with your actual Google Drive file ID
-url = 'https://drive.google.com/file/d/1afAIaxXH0efMFh3vFGK3-egp5RIFIQtE/view?usp=sharing'
-output = 'svd_model.pkl'
+# Correct download link using file ID
+file_id = "1afAIaxXH0efMFh3vFGK3-egp5RIFIQtE"
+url = f"https://drive.google.com/uc?id={file_id}"
+output = "svd_model.pkl"
 
 # Download model only if it doesn't exist locally
 import os
