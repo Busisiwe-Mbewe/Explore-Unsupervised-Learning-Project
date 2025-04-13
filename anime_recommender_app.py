@@ -116,4 +116,13 @@ with tab3:
     anime_df, rating_df = load_data()
     model = load_model()
 
-    user_id = st.number_input("Enter User ID:", min_value=_
+    user_id = st.number_input("Enter User ID:", min_value=1, step=1)  # Corrected line
+
+    if st.button("Get Recommendations"):
+        if user_id not in rating_df['user_id'].unique():
+            st.warning("User ID not found.")
+        else:
+            with st.spinner("Generating recommendations..."):
+                recs = recommend_top_n(user_id, model, anime_df, rating_df)
+                st.success("Here are your top picks!")
+                st.dataframe(recs.reset_index(drop=True))
