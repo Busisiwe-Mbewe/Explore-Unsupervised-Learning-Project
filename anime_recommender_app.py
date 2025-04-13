@@ -22,7 +22,7 @@ def load_data():
     return anime, ratings
 
 # ----------------------- LOAD MODEL -----------------------
-@st.cache_resource
+#@st.cache_resource
 def load_model():
     return joblib.load("svd_model.pkl")
 
