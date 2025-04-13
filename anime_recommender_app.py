@@ -3,35 +3,35 @@ import pandas as pd
 import pickle
 import os
 import requests
-from PIL import Image
+from io import BytesIO
 
-# ----------------------- DOWNLOAD MODEL -----------------------
-def download_model(file_url, output):
-    # Send a request to Dropbox and retrieve the file
-    response = requests.get(file_url, stream=True)
+# ----------------------- DOWNLOAD MODEL FROM DROPBOX -----------------------
+def download_model_from_dropbox(url):
+    # Send GET request to Dropbox link
+    response = requests.get(url)
     
-    # Save the content to a file
-    with open(output, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                f.write(chunk)
-    print("Model downloaded successfully!")
+    # Check if the response is successful (status code 200)
+    if response.status_code == 200:
+        print("Model downloaded successfully!")
+        return BytesIO(response.content)  # Return the content as a BytesIO object
+    else:
+        print("Failed to download model")
+        return None
 
-# ----------------------- DOWNLOAD AND LOAD MODEL -----------------------
+# ----------------------- LOAD MODEL -----------------------
 def load_model():
-    model_path = "svd_model.pkl"
+    model_url = "https://www.dropbox.com/scl/fi/dm2ofxhw9i269ugxpfdpz/svd_model.pkl?rlkey=h8mthkztqfcc6ykozjdsnwn6o&st=z2u8l2id&dl=1"  #Replace with your direct Dropbox link
     
-    # Check if the model file exists locally
-    if not os.path.exists(model_path):
-        dropbox_url = "https://www.dropbox.com/scl/fi/dm2ofxhw9i269ugxpfdpz/svd_model.pkl?rlkey=h8mthkztqfcc6ykozjdsnwn6o&st=z2u8l2id&dl=0" 
-        direct_url = dropbox_url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "")
-        download_model(direct_url, model_path)
+    # Download model from Dropbox at runtime
+    model_data = download_model_from_dropbox(model_url)
     
-    # Load the model using pickle
-    with open(model_path, 'rb') as f:
-        model = pickle.load(f)
-    
-    return model
+    if model_data is not None:
+        # Load the model using pickle from the downloaded content
+        model = pickle.load(model_data)
+        return model
+    else:
+        print("Model download failed!")
+        return None
 
 # ----------------------- LOAD DATA -----------------------
 @st.cache_data
@@ -64,8 +64,8 @@ def recommend_top_n(user_id, model, anime_df, rating_df, top_n=10):
 st.set_page_config(page_title="Anime Recommendation System", layout="wide")
 
 # ----------------------- IMAGE BANNER -----------------------
-banner_image = Image.open("Top-10-Best-Anime-Series-Of-All-Time-Ranked-1140x570.jpg")
-st.image(banner_image, use_container_width=True)
+#banner_image = Image.open("Top-10-Best-Anime-Series-Of-All-Time-Ranked-1140x570.jpg")
+#st.image(banner_image, use_container_width=True)
 
 # ----------------------- PAGE TITLE -----------------------
 st.markdown("<h1 style='text-align: center; margin-top: -20px;'>Anime Recommendation System</h1>", unsafe_allow_html=True)
@@ -109,15 +109,19 @@ with tab3:
     st.write("Enter your user ID to get personalized anime recommendations.")
 
     anime_df, rating_df = load_data()
-    model = load_model()
+    
+    model = load_model()  # Load the model dynamically from Dropbox at runtime
 
-    user_id = st.number_input("Enter User ID:", min_value=1, step=1)
+    if model:
+        user_id = st.number_input("Enter User ID:", min_value=1, step=1)
 
-    if st.button("Get Recommendations"):
-        if user_id not in rating_df['user_id'].unique():
-            st.warning("User ID not found.")
-        else:
-            with st.spinner("Generating recommendations..."):
-                recs = recommend_top_n(user_id, model, anime_df, rating_df)
-                st.success("Here are your top picks!")
-                st.dataframe(recs.reset_index(drop=True))
+        if st.button("Get Recommendations"):
+            if user_id not in rating_df['user_id'].unique():
+                st.warning("User ID not found.")
+            else:
+                with st.spinner("Generating recommendations..."):
+                    recs = recommend_top_n(user_id, model, anime_df, rating_df)
+                    st.success("Here are your top picks!")
+                    st.dataframe(recs.reset_index(drop=True))
+    else:
+        st.error("Failed to load the recommendation model. Please try again later.")
