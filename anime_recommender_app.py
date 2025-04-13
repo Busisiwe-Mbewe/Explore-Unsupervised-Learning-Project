@@ -1,19 +1,44 @@
 import streamlit as st
 import pandas as pd
-import pickle  # Changed from joblib to pickle
-from PIL import Image
-import gdown  
+import pickle
 import os
+import requests
 
 # ----------------------- DOWNLOAD MODEL -----------------------
-# Correct download link using file ID
-file_id = "1afAIaxXH0efMFh3vFGK3-egp5RIFIQtE"
-output = "svd_model.pkl"
+def download_model(file_id, output):
+    # Construct the direct download URL
+    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    
+    # Send a request to Google Drive and retrieve the file
+    session = requests.Session()
+    response = session.get(url, stream=True)
+    
+    # Check for redirection (Google Drive confirmation for large files)
+    if 'confirm' in response.url:
+        confirm_url = response.url + '&confirm=' + response.cookies['confirm']
+        response = session.get(confirm_url, stream=True)
+    
+    # Save the content to a file
+    with open(output, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+    print("Model downloaded successfully!")
 
-# Download model only if it doesn't exist locally
-if not os.path.exists(output):
-    url = f"https://drive.google.com/uc?id={file_id}"
-    gdown.download(url, output, quiet=False, fuzzy=True)  # Added fuzzy=True to handle confirmation pages
+# ----------------------- DOWNLOAD AND LOAD MODEL -----------------------
+def load_model():
+    model_path = "svd_model.pkl"
+    
+    # Check if the model file exists locally
+    if not os.path.exists(model_path):
+        file_id = "1afAIaxXH0efMFh3vFGK3-egp5RIFIQtE"  # Replace with your file ID
+        download_model(file_id, model_path)
+    
+    # Load the model using pickle
+    with open(model_path, 'rb') as f:
+        model = pickle.load(f)
+    
+    return model
 
 # ----------------------- LOAD DATA -----------------------
 @st.cache_data
@@ -21,14 +46,6 @@ def load_data():
     anime = pd.read_csv("data/anime.csv")  # Must contain 'anime_id' and 'name'
     ratings = pd.read_csv("data/rating.csv")
     return anime, ratings
-
-# ----------------------- LOAD MODEL -----------------------
-@st.cache_resource
-def load_model():
-    # Using pickle to load the model
-    with open("svd_model.pkl", 'rb') as f:
-        model = pickle.load(f)  # Use pickle to load the model
-    return model
 
 # ----------------------- RECOMMENDATION FUNCTION -----------------------
 def recommend_top_n(user_id, model, anime_df, rating_df, top_n=10):
@@ -52,21 +69,6 @@ def recommend_top_n(user_id, model, anime_df, rating_df, top_n=10):
 
 # ----------------------- UI CONFIG -----------------------
 st.set_page_config(page_title="Anime Recommendation System", layout="wide")
-
-# ----------------------- CSS for banner -----------------------
-st.markdown("""
-    <style>
-    .banner {
-        background-color: #6c63ff;
-        color: white;
-        text-align: center;
-        padding: 2rem;
-        font-size: 2.5rem;
-        border-radius: 10px;
-        margin-bottom: 30px;
-    }
-    </style>
-""", unsafe_allow_html=True)
 
 # ----------------------- IMAGE BANNER -----------------------
 banner_image = Image.open("Top-10-Best-Anime-Series-Of-All-Time-Ranked-1140x570.jpg")
@@ -116,7 +118,7 @@ with tab3:
     anime_df, rating_df = load_data()
     model = load_model()
 
-    user_id = st.number_input("Enter User ID:", min_value=1, step=1)  # Corrected line
+    user_id = st.number_input("Enter User ID:", min_value=1, step=1)
 
     if st.button("Get Recommendations"):
         if user_id not in rating_df['user_id'].unique():
