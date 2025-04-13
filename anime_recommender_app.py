@@ -6,7 +6,7 @@ import gdown
 
 # ----------------------- DOWNLOAD MODEL -----------------------
 # Replace <your_file_id> with your actual Google Drive file ID
-url = 'https://drive.google.com/file/d/12RmKnkLXnFRaGxfW-4FII2IblkPFRXR6/view?usp=sharing'
+url = 'https://drive.google.com/file/d/1QzhO53ttS18P6N8_5y2x3icatQZj3d8a/view?usp=sharing'
 output = 'svd_model.pkl'
 
 # Download model only if it doesn't exist locally
