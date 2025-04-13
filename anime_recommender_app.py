@@ -6,18 +6,9 @@ import requests
 from PIL import Image
 
 # ----------------------- DOWNLOAD MODEL -----------------------
-def download_model(file_id, output):
-    # Construct the direct download URL
-    url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    
-    # Send a request to Google Drive and retrieve the file
-    session = requests.Session()
-    response = session.get(url, stream=True)
-    
-    # Check for redirection (Google Drive confirmation for large files)
-    if 'confirm' in response.url:
-        confirm_url = response.url + '&confirm=' + response.cookies['confirm']
-        response = session.get(confirm_url, stream=True)
+def download_model(file_url, output):
+    # Send a request to Dropbox and retrieve the file
+    response = requests.get(file_url, stream=True)
     
     # Save the content to a file
     with open(output, 'wb') as f:
@@ -32,8 +23,9 @@ def load_model():
     
     # Check if the model file exists locally
     if not os.path.exists(model_path):
-        file_id = "1afAIaxXH0efMFh3vFGK3-egp5RIFIQtE"  # Replace with your file ID
-        download_model(file_id, model_path)
+        dropbox_url = "https://www.dropbox.com/scl/fi/dm2ofxhw9i269ugxpfdpz/svd_model.pkl?rlkey=h8mthkztqfcc6ykozjdsnwn6o&st=z2u8l2id&dl=0" 
+        direct_url = dropbox_url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("?dl=0", "")
+        download_model(direct_url, model_path)
     
     # Load the model using pickle
     with open(model_path, 'rb') as f:
@@ -72,8 +64,8 @@ def recommend_top_n(user_id, model, anime_df, rating_df, top_n=10):
 st.set_page_config(page_title="Anime Recommendation System", layout="wide")
 
 # ----------------------- IMAGE BANNER -----------------------
-#banner_image = Image.open("Top-10-Best-Anime-Series-Of-All-Time-Ranked-1140x570.jpg")
-#st.image(banner_image, use_container_width=True)
+banner_image = Image.open("Top-10-Best-Anime-Series-Of-All-Time-Ranked-1140x570.jpg")
+st.image(banner_image, use_container_width=True)
 
 # ----------------------- PAGE TITLE -----------------------
 st.markdown("<h1 style='text-align: center; margin-top: -20px;'>Anime Recommendation System</h1>", unsafe_allow_html=True)
